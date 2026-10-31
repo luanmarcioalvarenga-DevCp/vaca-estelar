@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d23"><meta name="description" content="Vaca Estelar: demonstração interativa 3D adaptada do projeto Java de Luan Márcio.">
+<title>Vaca Estelar | Experiência 3D</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}
+body{margin:0;background:#070b1d;color:#edf4ff;overflow-x:hidden}canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.overlay{position:relative;pointer-events:none;min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(20px,4vw,48px)}
+header{text-align:center;text-shadow:0 2px 24px #020413}header small{font-size:11px;letter-spacing:.38em;color:#9fb9ef}h1{font-size:clamp(38px,7vw,88px);letter-spacing:.12em;margin:14px 0 4px;line-height:1.05}header p{color:#b7b6d9;font-size:clamp(12px,2vw,17px);margin:0}
+.panel{pointer-events:auto;align-self:center;max-width:900px;width:100%;border:1px solid #6578bb55;border-radius:20px;background:#0b1230b8;backdrop-filter:blur(14px);padding:16px 20px;box-shadow:0 15px 55px #0005}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.status{color:#b4d7fa;font-size:13px}button,a.button{font:inherit;border:1px solid #7c92d47a;background:#1b2b59c9;color:#eef5ff;border-radius:10px;padding:10px 13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}button:hover,a.button:hover{background:#344d91}button:focus-visible,a.button:focus-visible{outline:3px solid #9ec9ff;outline-offset:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.hint{color:#9daed5;font-size:12px;margin:12px 0 0;line-height:1.6;text-align:center}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:600px){.overlay{padding:18px 12px}.panel{padding:13px}.top{justify-content:center}.actions{justify-content:center}h1{letter-spacing:.06em}}
+</style></head><body>
+<canvas id="scene" aria-label="Visualização 3D de uma vaca formada por estrelas. Arraste para girar, use os controles para aproximar e pausar."></canvas>
+<main class="overlay"><header><small>CONSTELAÇÃO EM MOVIMENTO</small><h1>VACA ESTELAR</h1><p>Uma dança desenhada com milhares de estrelas</p></header>
+<section class="panel" aria-label="Controles da demonstração"><div class="top"><span id="status" class="status" aria-live="polite">DANÇANDO · 1.00×</span><div class="actions">
+<button id="pause" type="button">⏸ Pausar</button><button id="lines" type="button">✦ Constelações: sim</button>
+<button id="minus" type="button" aria-label="Diminuir velocidade">− Ritmo</button><button id="plus" type="button" aria-label="Aumentar velocidade">+ Ritmo</button>
+<button id="zoomOut" type="button" aria-label="Afastar câmera">− Zoom</button><button id="zoomIn" type="button" aria-label="Aproximar câmera">+ Zoom</button>
+<button id="reset" type="button">↺ Restaurar</button><a class="button" href="https://github.com/luanmarcioalvarenga-DevCp/vaca-estelar">⌘ Código Java</a>
+</div></div><p class="hint">Arraste para girar · Roda do mouse ou botões para zoom · Espaço para pausar · L para linhas · R para restaurar · ↑↓ para ritmo</p></section></main>
+<script>
+'use strict';
+const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d',{alpha:false});
+const $=id=>document.getElementById(id),TAU=Math.PI*2,colors=['#d2f3ff','#ff9cc5','#7766ff','#ffe18c','#ff63a0'];
+let seed=42;function rnd(){seed=(1664525*seed+1013904223)>>>0;return seed/4294967296}
+const stars=[];function add(x,y,z,part,color){stars.push({x,y,z,part,color,size:.65+rnd()*1.15,phase:rnd()*TAU})}
+function ellipsoid(cx,cy,cz,rx,ry,rz,n,part,color,patches){for(let i=0;i<n;i++){const u=rnd()*TAU,v=Math.acos(2*rnd()-1),x=cx+rx*Math.sin(v)*Math.cos(u),y=cy+ry*Math.cos(v),z=cz+rz*Math.sin(v)*Math.sin(u);const patch=patches&&(((x+65)/60)**2+((y+45)/49)**2<1||((x-55)/40)**2+((y+5)/47)**2<1||(x>125&&x<164&&y<-105));add(x,y,z,part,patch?2:color)}}
+function curve(ax,ay,az,bx,by,bz,n,part,color){for(let i=0;i<n;i++){const t=i/(n-1);add(ax+(bx-ax)*t-Math.sin(t*Math.PI)*13,ay+(by-ay)*t,az+(bz-az)*t+(rnd()-.5)*4,part,color)}}
+ellipsoid(0,-25,0,175,90,66,1800,0,0,true);ellipsoid(155,-94,0,65,70,52,650,1,0,true);ellipsoid(207,-65,0,46,30,54,380,1,1,false);
+for(const side of [-1,1]){ellipsoid(132,-140,side*64,38,12,25,130,1,1,false);curve(145,-146,side*31,136,-195,side*38,30,1,3);ellipsoid(182,-114,side*45,7,9,4,36,1,3,false);ellipsoid(235,-66,side*26,4,5,7,25,1,4,false)}
+for(const side of [-1,1]){ellipsoid(97,93,side*42,15,69,15,220,2,0,false);ellipsoid(-110,93,side*42,18,69,17,220,3,0,false);ellipsoid(100,157,side*42,25,12,21,80,2,2,false);ellipsoid(-107,157,side*42,26,12,21,80,3,2,false)}
+ellipsoid(-45,61,0,42,22,32,150,0,1,false);curve(-160,-45,0,-225,55,0,120,4,0);ellipsoid(-225,60,0,16,25,14,100,4,2,false);
+const bg=Array.from({length:220},()=>({x:rnd(),y:rnd(),phase:rnd()*TAU}));
+let w=0,h=0,dpr=1,yaw=-.35,pitch=.12,zoom=1,speed=1,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,lines=true,time=0,last=0,dragging=false,px=0,py=0;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);w=innerWidth;h=innerHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+function pose(s,t){const swing=Math.sin(t*1.2+s.x*.008)*.75;let y=s.y;let z=s.z;if(s.part===2||s.part===3)y+=Math.sin(t*1.5+(s.part===2?0:Math.PI))*(s.y>100?8:3);if(s.part===4)z+=Math.sin(t*1.8)*14;return[s.x,y+swing,z]}
+function project(s,scale){const p=pose(s,time),cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);const x=p[0]*cy+p[2]*sy,z=-p[0]*sy+p[2]*cy,y=p[1]*cp-z*sp,depth=p[1]*sp+z*cp;const perspective=1000/(1000+depth);return{x:w*.5+x*scale*perspective,y:h*.52+y*scale*perspective,depth,part:s.part,color:s.color,size:Math.max(.6,s.size*scale*perspective),phase:s.phase}}
+function render(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;if(!paused)time+=dt*speed*3.6;
+const grad=ctx.createRadialGradient(w*.55,h*.45,5,w*.55,h*.45,Math.max(w,h)*.85);grad.addColorStop(0,'#201947');grad.addColorStop(.55,'#0a102b');grad.addColorStop(1,'#030613');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+for(const p of bg){ctx.globalAlpha=.25+.45*(.5+.5*Math.sin(time*.7+p.phase));ctx.fillStyle='#b8d0ff';ctx.beginPath();ctx.arc(p.x*w,p.y*h,.7+p.phase/TAU,0,TAU);ctx.fill()}ctx.globalAlpha=1;
+const scale=Math.min(w/1000,h/730)*zoom;ctx.strokeStyle='#6483ee50';ctx.lineWidth=1;for(let i=0;i<4;i++){ctx.beginPath();ctx.ellipse(w*.5,h*.52+180*scale,(270+i*18)*scale,(32+i*6)*scale,0,0,TAU);ctx.stroke()}
+const dots=stars.map(s=>project(s,scale)).sort((a,b)=>b.depth-a.depth);
+if(lines){ctx.strokeStyle='#95b6ff29';ctx.lineWidth=.7;for(let i=0;i<dots.length;i+=3){const a=dots[i];for(let j=i+1;j<Math.min(i+14,dots.length);j++){const b=dots[j],dist=Math.hypot(a.x-b.x,a.y-b.y);if(a.part===b.part&&dist>4&&dist<22*scale){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();break}}}}
+for(const p of dots){const alpha=.55+.45*(.5+.5*Math.sin(time+p.phase));ctx.globalAlpha=alpha*.16;ctx.fillStyle=colors[p.color];ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,TAU);ctx.fill();ctx.globalAlpha=alpha;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,TAU);ctx.fill()}ctx.globalAlpha=1;requestAnimationFrame(render)}
+requestAnimationFrame(render);
+function update(){ $('status').textContent=(paused?'PAUSADA':'DANÇANDO')+' · '+speed.toFixed(2)+'× · '+stars.length+' estrelas';$('pause').textContent=paused?'▶ Continuar':'⏸ Pausar';$('lines').textContent='✦ Constelações: '+(lines?'sim':'não')}
+function reset(){yaw=-.35;pitch=.12;zoom=1;speed=1;update()}
+$('pause').onclick=()=>{paused=!paused;update()};$('lines').onclick=()=>{lines=!lines;update()};$('minus').onclick=()=>{speed=Math.max(.25,speed-.25);update()};$('plus').onclick=()=>{speed=Math.min(2.5,speed+.25);update()};$('zoomOut').onclick=()=>{zoom=Math.max(.6,zoom-.1)};$('zoomIn').onclick=()=>{zoom=Math.min(1.8,zoom+.1)};$('reset').onclick=reset;
+canvas.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!dragging)return;yaw+=(e.clientX-px)*.008;pitch=Math.max(-.55,Math.min(.55,pitch+(e.clientY-py)*.004));px=e.clientX;py=e.clientY});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(1.8,zoom-Math.sign(e.deltaY)*.08))},{passive:false});
+addEventListener('keydown',e=>{if(e.target.closest('button,a'))return;if(e.code==='Space'){e.preventDefault();paused=!paused;update()}else if(e.key.toLowerCase()==='l'){lines=!lines;update()}else if(e.key.toLowerCase()==='r'){reset()}else if(e.key==='ArrowUp'){e.preventDefault();speed=Math.min(2.5,speed+.25);update()}else if(e.key==='ArrowDown'){e.preventDefault();speed=Math.max(.25,speed-.25);update()}});update();
+</script></body></html>
